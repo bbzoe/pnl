@@ -259,16 +259,17 @@
   .cell.positive {
     background-color: rgba(var(--color-success-rgb), calc(var(--opacity-min) + var(--intensity) * var(--opacity-range)));
   }
+  /* Remove text coloring to improve contrast on colored backgrounds. 
+     Text will inherit --text-primary (Black in light mode, White in dark mode) */
   .cell.positive input, .cell.positive .readonly-text, .cell.positive .currency-label {
-    color: rgb(var(--color-success-rgb)); /* Use solid color for text */
-    /* Ensure text is readable on darker backgrounds - might need to darken text in light mode if bg is dark */
+    color: inherit;
   }
 
   .cell.negative {
     background-color: rgba(var(--color-danger-rgb), calc(var(--opacity-min) + var(--intensity) * var(--opacity-range)));
   }
   .cell.negative input, .cell.negative .readonly-text, .cell.negative .currency-label {
-    color: rgb(var(--color-danger-rgb));
+    color: inherit;
   }
 </style>
 
