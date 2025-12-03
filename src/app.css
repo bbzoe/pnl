@@ -1,0 +1,110 @@
+:root {
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  
+  /* Light Theme */
+  --bg-primary: #ffffff;
+  --bg-secondary: #e4e4e7; /* Zinc 200 */
+  --bg-tertiary: #d4d4d8; /* Zinc 300 */
+  --text-primary: #18181b;
+  --text-secondary: #71717a;
+  --border-color: #e4e4e7;
+  
+  --color-success: #10b981; /* Emerald 500 */
+  --color-success-rgb: 16, 185, 129;
+  --color-success-bg: rgba(16, 185, 129, 0.2);
+  
+  --color-danger: #ef4444; /* Red 500 */
+  --color-danger-rgb: 239, 68, 68;
+  --color-danger-bg: rgba(239, 68, 68, 0.2);
+  
+  --accent: #3b82f6; /* Blue 500 */
+  
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  
+  --radius: 0px;
+
+  /* Opacity config for heatmap */
+  --opacity-min: 0.3;
+  --opacity-range: 0.7;
+}
+
+:root.dark {
+  /* Dark Theme - Modern, deep slate/zinc look */
+  --bg-primary: #09090b; /* Zinc 950 */
+  --bg-secondary: #18181b; /* Zinc 900 */
+  --bg-tertiary: #27272a; /* Zinc 800 */
+  --text-primary: #fafafa; /* Zinc 50 */
+  --text-secondary: #a1a1aa; /* Zinc 400 */
+  --border-color: #27272a;
+  
+  --color-success: #34d399; /* Emerald 400 */
+  --color-success-rgb: 52, 211, 153;
+  --color-success-bg: rgba(52, 211, 153, 0.2);
+  
+  --color-danger: #f87171; /* Red 400 */
+  --color-danger-rgb: 248, 113, 113;
+  --color-danger-bg: rgba(248, 113, 113, 0.2);
+  
+  --accent: #60a5fa; /* Blue 400 */
+  
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+
+  /* Opacity config for heatmap - dark mode needs less opacity to show color */
+  --opacity-min: 0.15;
+  --opacity-range: 0.5;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input {
+  font-family: inherit;
+  background: transparent;
+  color: inherit;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 0.5rem;
+}
+
+/* Custom Scrollbar for modern feel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem;
+}
