@@ -72,7 +72,9 @@ export const mainCalendarData = derived(calendars, ($calendars) => {
     if (!cal || !cal.data) continue;
     
     for (const [date, val] of Object.entries(cal.data)) {
-      sumData[date] = (sumData[date] || 0) + val;
+      // Ensure value is a valid number
+      const numVal = typeof val === 'number' && !isNaN(val) ? val : 0;
+      sumData[date] = (sumData[date] || 0) + numVal;
     }
   }
   
@@ -111,7 +113,8 @@ export const updateCell = (calendarId: string, date: string, value: number | nul
     return cals.map(c => {
       if (c.id !== calendarId) return c;
       const newData = { ...c.data };
-      if (value === null || isNaN(value)) {
+      // Ensure value is a valid number before saving
+      if (value === null || isNaN(value) || typeof value !== 'number') {
         delete newData[date];
       } else {
         newData[date] = value;

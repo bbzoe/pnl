@@ -53,14 +53,18 @@
 
   function handleInput(e: Event) {
     const target = e.target as HTMLInputElement;
-    inputValue = target.value;
+    // Replace all commas with dots for decimal separator
+    // Input type="number" will automatically handle only one decimal point
+    inputValue = target.value.replace(/,/g, '.');
   }
 
   function handleBlur() {
     isFocused = false;
-    const num = parseFloat(inputValue);
+    // Ensure all commas are replaced with dots before parsing
+    const normalizedValue = inputValue.replace(/,/g, '.');
+    const num = parseFloat(normalizedValue);
     // If empty string, send null
-    dispatch('change', { value: inputValue.trim() === '' || isNaN(num) ? null : num });
+    dispatch('change', { value: normalizedValue.trim() === '' || isNaN(num) ? null : num });
   }
 
   function handleFocus() {
