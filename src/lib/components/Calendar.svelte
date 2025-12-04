@@ -102,9 +102,10 @@
   }
 
   .month-label {
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: 1.1rem;
+    font-weight: 600;
     text-transform: capitalize;
+    color: var(--text-secondary);
   }
 
   .nav-btn {

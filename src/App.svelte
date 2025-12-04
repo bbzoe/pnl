@@ -10,6 +10,7 @@
   import CalendarView from './lib/components/Calendar.svelte';
   import TopBar from './lib/components/TopBar.svelte';
   import Tabs from './lib/components/Tabs.svelte';
+  import StatsWidgets from './lib/components/StatsWidgets.svelte';
 
   let activeTab = 'main';
 
@@ -67,6 +68,10 @@
     Free, private PNL tracker. All data stays local, no servers, just your trades.
   </p>
   
+  {#if activeCalendar || isMain}
+    <StatsWidgets data={currentData} />
+  {/if}
+  
   <Tabs 
     calendars={$calendars} 
     activeId={activeTab} 
@@ -78,6 +83,7 @@
 
   <main class="content">
     {#if activeCalendar || isMain}
+      
        <!-- Key block to force re-render/reset state when tab changes if needed, 
             though Svelte handles props updates well. 
             Using activeTab as key helps with transition/reset of internal state like current month view if desired.

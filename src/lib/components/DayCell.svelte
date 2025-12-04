@@ -17,6 +17,7 @@
   let fontSize = 1.25;
   let cellWidth = 0;
   let contentWidth = 0;
+  let inputElement: HTMLInputElement | null = null;
 
   $: {
     if (!isFocused) {
@@ -69,6 +70,39 @@
 
   function handleFocus() {
     isFocused = true;
+  }
+
+  function handleCellClick(e: MouseEvent) {
+    if (isReadOnly) return;
+    
+    // Don't focus if clicking directly on input
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'INPUT') return;
+    
+    // Prevent default to avoid any interference
+    e.preventDefault();
+    
+    // Focus input, using setTimeout to ensure it works even if another cell has focus
+    if (inputElement) {
+      setTimeout(() => {
+        if (inputElement) {
+          inputElement.focus();
+          // Select all text if there's a value, so user can immediately type to replace
+          if (inputValue) {
+            inputElement.select();
+          }
+        }
+      }, 0);
+    }
+  }
+
+  function handleCellKeydown(e: KeyboardEvent) {
+    if (!isReadOnly && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      if (inputElement) {
+        inputElement.focus();
+      }
+    }
   }
 
   function formatValue(val: number): string {
@@ -209,6 +243,10 @@
   class:outside={isOutsideMonth}
   bind:clientWidth={cellWidth}
   style="{bgColorStyle}"
+  on:click={handleCellClick}
+  on:keydown={handleCellKeydown}
+  role="button"
+  tabindex="0"
 >
   <div class="day-number" style="color: {dayNumberColor}">{dateLabel}</div>
   <div class="input-wrapper">
@@ -225,10 +263,12 @@
       <div class="input-container" style="font-size: {fontSize}rem">
         <div class="measure-wrapper" bind:clientWidth={contentWidth}>
             <div class="auto-input-wrapper">
-                <span class="input-sizer">{inputValue || '0'}</span>
+                <span class="input-sizer">{inputValue || (isFocused ? '0' : '0')}</span>
                 <input
-                    type="number"
-                    step="0.01"
+                    type="text"
+                    inputmode="decimal"
+                    pattern="[0-9]*\.?[0-9]*"
+                    bind:this={inputElement}
                     value={inputValue}
                     on:input={handleInput}
                     on:blur={handleBlur}
@@ -260,6 +300,10 @@
                 border-radius 0.08s cubic-bezier(0.4, 0, 0.2, 1),
                 background-color 0.2s ease,
                 border-color 0.2s ease;
+  }
+
+  .cell:not(.outside) {
+    cursor: pointer;
   }
 
   .cell:hover {
@@ -361,15 +405,7 @@
     line-height: normal;
   }
 
-  /* Remove number spinners */
-  input::-webkit-outer-spin-button,
-  input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  input[type=number] {
-    -moz-appearance: textfield;
-  }
+  /* No spinners needed for text input with inputmode="decimal" */
 
   .readonly-text {
     /* Font size handled by inline style */
