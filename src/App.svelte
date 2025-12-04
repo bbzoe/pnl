@@ -63,6 +63,10 @@
 <div class="container">
   <TopBar />
   
+  <p class="app-description">
+    Free, private PNL tracker. All data stays local, no servers, just your trades.
+  </p>
+  
   <Tabs 
     calendars={$calendars} 
     activeId={activeTab} 
@@ -97,6 +101,16 @@
 </div>
 
 <style>
+  .app-description {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin: 0.25rem 0 1.5rem 0;
+    padding: 0;
+    letter-spacing: -0.01em;
+  }
+
   .content {
     background: var(--bg-primary);
     border-radius: var(--radius);

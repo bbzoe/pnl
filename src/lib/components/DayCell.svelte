@@ -4,7 +4,8 @@
   
   export let dateLabel: string;
   export let value: number | undefined = undefined;
-  export let intensity: number = 0; // 0 to 1
+  export let maxPositive: number = 0;
+  export let minNegative: number = 0;
   export let isReadOnly: boolean = false;
   export let isToday: boolean = false;
   export let isOutsideMonth: boolean = false;
@@ -70,11 +71,76 @@
     return Number.isInteger(val) ? val.toString() : val.toFixed(2);
   }
 
-  // Determine styling class
+  // Calculate intensity locally based on input value
+  function calculateIntensity(val: number, maxPos: number, minNeg: number): number {
+      if (isNaN(val) || val === 0) return 0;
+      
+      const absVal = Math.abs(val);
+      let maxAbs = 0;
+      
+      if (val > 0) {
+          maxAbs = maxPos;
+      } else {
+          maxAbs = Math.abs(minNeg);
+      }
+      
+      if (maxAbs === 0) return 0;
+
+      // Logarithmic scale
+      const ratio = Math.log(absVal + 1) / Math.log(maxAbs + 1);
+      
+      // Clamp 0-1
+      return Math.max(0, Math.min(1, ratio));
+  }
+
+  // Determine styling class and intensity
   $: numVal = parseFloat(inputValue);
   $: statusClass = !isNaN(numVal) && inputValue !== '' 
       ? (numVal > 0 ? 'positive' : (numVal < 0 ? 'negative' : 'neutral')) 
       : '';
+  $: intensity = !isNaN(numVal) ? calculateIntensity(numVal, maxPositive, minNegative) : 0;
+
+  // HSL Calculation for better color control without opacity issues
+  $: bgColorStyle = (() => {
+      if (!statusClass || statusClass === 'neutral') return '';
+      
+      const isPositive = statusClass === 'positive';
+      const isDark = $settings.theme === 'dark';
+      
+      // Hue: Green ~150, Red ~0 (or 360)
+      const hue = isPositive ? 150 : 0; 
+      
+      let saturation, lightness;
+      
+      if (isDark) {
+          // Dark Mode:
+          // User requested: Lighter = Near Zero, Darker = Higher Value
+          // Low Intensity: Light/Bright color (L=60%)
+          // High Intensity: Dark/Deep color (L=20%)
+          // Saturation: High
+          saturation = 70 + (intensity * 10); 
+          lightness = 60 - (intensity * 40); // 60% -> 20%
+      } else {
+          // Light Mode:
+          // Low Intensity: Very light pastel (L=95%)
+          // High Intensity: Deep color (L=40%)
+          saturation = 80;
+          lightness = 95 - (intensity * 55); // 95% -> 40%
+      }
+      
+      // Dynamic Text Color based on background lightness
+      // Threshold: ~50% Lightness. Below 50% -> White text. Above 50% -> Inherit (Black in Light, White in Dark?)
+      // Wait, in Dark Mode, default text is White.
+      // If background is L=60% (Light Green), White text might be hard to read?
+      // L=60% Green + White Text = Poor contrast?
+      // L=60% Green + Black Text = Good contrast.
+      
+      // So we need explicit text color logic based on lightness, disregarding theme default if background is painted.
+      
+      const textColor = lightness < 50 ? 'white' : 'black';
+      
+      return `background-color: hsl(${hue}, ${saturation}%, ${lightness}%); color: ${textColor};`;
+  })();
 </script>
 
 <div 
@@ -82,7 +148,7 @@
   class:today={isToday} 
   class:outside={isOutsideMonth}
   bind:clientWidth={cellWidth}
-  style="--intensity: {intensity}"
+  style="{bgColorStyle}"
 >
   <div class="day-number">{dateLabel}</div>
   <div class="input-wrapper">
@@ -123,12 +189,23 @@
   .cell {
     position: relative;
     background-color: var(--bg-secondary);
-    border: none;
+    border: 1px solid var(--border-color);
     padding: 0.5rem;
     display: flex;
     flex-direction: column;
     min-height: 100px; /* Square-ish */
-    transition: all 0.2s ease;
+    border-radius: 2px;
+    transition: transform 0.08s cubic-bezier(0.4, 0, 0.2, 1), 
+                box-shadow 0.08s cubic-bezier(0.4, 0, 0.2, 1), 
+                border-radius 0.08s cubic-bezier(0.4, 0, 0.2, 1),
+                background-color 0.2s ease;
+  }
+
+  .cell:hover {
+    transform: scale(1.05);
+    z-index: 10;
+    border-radius: 6px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
   }
   
   @media (max-width: 768px) {
@@ -148,7 +225,7 @@
   }
 
   .cell.today {
-    box-shadow: inset 0 0 0 2px var(--accent);
+    border: 3px solid var(--today-border);
   }
 
   .cell.outside {
@@ -255,21 +332,14 @@
      Maybe position absolute the label? 
   */
   
-  /* Status Colors */
-  .cell.positive {
-    background-color: rgba(var(--color-success-rgb), calc(var(--opacity-min) + var(--intensity) * var(--opacity-range)));
+  /* Status Colors handled via inline styles for background */
+  .cell.positive, .cell.negative {
+    /* No default bg color, handled by style prop */
   }
-  /* Remove text coloring to improve contrast on colored backgrounds. 
-     Text will inherit --text-primary (Black in light mode, White in dark mode) */
-  .cell.positive input, .cell.positive .readonly-text, .cell.positive .currency-label {
-    color: inherit;
-  }
-
-  .cell.negative {
-    background-color: rgba(var(--color-danger-rgb), calc(var(--opacity-min) + var(--intensity) * var(--opacity-range)));
-  }
+  
+  .cell.positive input, .cell.positive .readonly-text, .cell.positive .currency-label,
   .cell.negative input, .cell.negative .readonly-text, .cell.negative .currency-label {
-    color: inherit;
+    color: inherit; /* Always inherit text color from theme (black/white) */
   }
 </style>
 

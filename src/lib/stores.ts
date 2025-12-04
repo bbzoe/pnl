@@ -1,43 +1,12 @@
 import { writable, derived } from 'svelte/store';
 import type { Calendar, AppSettings, DayData } from './types';
 
-// Changed key to force refresh with new demo data
-const STORAGE_KEY_CALENDARS = 'pnl_calendars_v3';
+// New key to start fresh without demo data
+const STORAGE_KEY_CALENDARS = 'pnl_calendars_v4';
 const STORAGE_KEY_SETTINGS = 'pnl_settings';
 
-// Generate some demo data
-const generateDemoData = () => {
-  const data: DayData = {};
-  // Update to match current simulated date (Dec 2025)
-  const months = ['2025-11', '2025-12', '2026-01'];
-  
-  months.forEach(month => {
-    // Generate for 25 days in each month
-    for (let i = 1; i <= 28; i++) {
-       // Randomly skip some days
-       if (Math.random() > 0.7) continue;
-       
-       const day = i.toString().padStart(2, '0');
-       const date = `${month}-${day}`;
-       
-       // Random value between -500 and 2000
-       // Skew towards positive
-       let val = Math.floor(Math.random() * 2500) - 500;
-       
-       // Make some big wins/losses
-       if (Math.random() > 0.9) val *= 3;
-       
-       data[date] = val;
-    }
-  });
-  return data;
-};
-
 const defaultCalendars: Calendar[] = [
-  { id: 'main', name: 'General', data: {} },
-  { id: 'binance', name: 'Binance', data: generateDemoData() },
-  { id: 'bybit', name: 'Bybit', data: generateDemoData() },
-  { id: 'hyperliquid', name: 'Hyperliquid', data: generateDemoData() }
+  { id: 'main', name: 'General', data: {} }
 ];
 
 const defaultSettings: AppSettings = {

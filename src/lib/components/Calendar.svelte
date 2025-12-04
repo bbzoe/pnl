@@ -47,32 +47,6 @@
 
   $: maxPositive = Math.max(0, ...visibleValues.filter(v => v > 0));
   $: minNegative = Math.min(0, ...visibleValues.filter(v => v < 0));
-
-  function getIntensity(val: number | undefined): number {
-      if (val === undefined || val === null || val === 0) return 0;
-      
-      const absVal = Math.abs(val);
-      let maxAbs = 0;
-      
-      if (val > 0) {
-          maxAbs = maxPositive;
-      } else {
-          maxAbs = Math.abs(minNegative);
-      }
-      
-      if (maxAbs === 0) return 0;
-
-      // Logarithmic scale to smooth out the distribution
-      const ratio = Math.log(absVal + 1) / Math.log(maxAbs + 1);
-      
-      // Clamp ratio to 0-1
-      const clampedRatio = Math.max(0, Math.min(1, ratio));
-      
-      // Standard Heatmap Logic:
-      // Low val -> Low Ratio -> Low Intensity (Light/Pale color)
-      // High val -> High Ratio -> High Intensity (Deep/Dark color)
-      return clampedRatio;
-  }
 </script>
 
 <div class="calendar-container">
@@ -101,7 +75,8 @@
       <DayCell 
         dateLabel={format(day, 'd')}
         value={val}
-        intensity={getIntensity(val)}
+        maxPositive={maxPositive}
+        minNegative={minNegative}
         isReadOnly={isReadOnly}
         isToday={isToday(day)}
         isOutsideMonth={!isSameMonth(day, currentDate)}
