@@ -143,7 +143,63 @@
       
       const textColor = lightness < 50 ? 'white' : 'black';
       
-      return `background-color: hsl(${hue}, ${saturation}%, ${lightness}%); color: ${textColor};`;
+      // Calculate border color: same hue and saturation, but different lightness
+      // Light mode: darker border (reduce lightness by 25-30% for better contrast)
+      // Dark mode: lighter border (increase lightness by 25-30% for better contrast)
+      let borderLightness;
+      if (isDark) {
+          // Dark mode: make border lighter (add 25-30% of remaining lightness range)
+          const lightnessRange = 100 - lightness;
+          borderLightness = Math.min(100, lightness + (lightnessRange * 0.3));
+      } else {
+          // Light mode: make border darker (reduce by 25-30% of current lightness)
+          borderLightness = Math.max(0, lightness - (lightness * 0.3));
+      }
+      const borderColor = `hsl(${hue}, ${saturation}%, ${borderLightness}%)`;
+      
+      // For "today" cells, don't set border-color in inline style - let CSS .cell.today handle it
+      if (isToday) {
+          return `background-color: hsl(${hue}, ${saturation}%, ${lightness}%); color: ${textColor};`;
+      }
+      
+      return `background-color: hsl(${hue}, ${saturation}%, ${lightness}%); color: ${textColor}; border-color: ${borderColor};`;
+  })();
+
+  // Calculate day number color based on background lightness
+  // Use slightly higher threshold for day number to ensure better contrast
+  $: dayNumberColor = (() => {
+      if (!statusClass || statusClass === 'neutral') {
+          // Default color for neutral cells - use theme's secondary text color
+          return 'var(--text-secondary)';
+      }
+      
+      const isPositive = statusClass === 'positive';
+      const isDark = $settings.theme === 'dark';
+      
+      const hue = isPositive ? 150 : 0;
+      let saturation, lightness;
+      
+      if (isDark) {
+          saturation = 70 + (intensity * 10);
+          lightness = 60 - (intensity * 40); // 60% -> 20%
+      } else {
+          saturation = 80;
+          lightness = 95 - (intensity * 55); // 95% -> 40%
+      }
+      
+      // For day number, use threshold of 55% for better contrast
+      // Adjust threshold slightly based on theme for optimal visibility
+      const threshold = isDark ? 50 : 55;
+      
+      if (lightness < threshold) {
+          // Dark background - use white for maximum contrast
+          // In light mode, use pure white; in dark mode, use slightly off-white for better visibility on colored backgrounds
+          return isDark ? '#f5f5f5' : '#ffffff';
+      } else {
+          // Light background - use dark color for maximum contrast
+          // In light mode, use pure black; in dark mode, use very dark gray
+          return isDark ? '#0a0a0a' : '#000000';
+      }
   })();
 </script>
 
@@ -154,7 +210,7 @@
   bind:clientWidth={cellWidth}
   style="{bgColorStyle}"
 >
-  <div class="day-number">{dateLabel}</div>
+  <div class="day-number" style="color: {dayNumberColor}">{dateLabel}</div>
   <div class="input-wrapper">
     {#if isReadOnly}
       <div class="readonly-text" style="font-size: {fontSize}rem">
@@ -198,17 +254,18 @@
     display: flex;
     flex-direction: column;
     min-height: 100px; /* Square-ish */
-    border-radius: 2px;
+    border-radius: 4px;
     transition: transform 0.08s cubic-bezier(0.4, 0, 0.2, 1), 
                 box-shadow 0.08s cubic-bezier(0.4, 0, 0.2, 1), 
                 border-radius 0.08s cubic-bezier(0.4, 0, 0.2, 1),
-                background-color 0.2s ease;
+                background-color 0.2s ease,
+                border-color 0.2s ease;
   }
 
   .cell:hover {
     transform: scale(1.05);
     z-index: 10;
-    border-radius: 6px;
+    border-radius: 8px;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
   }
   
@@ -243,7 +300,7 @@
     left: 0.5rem;
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--text-secondary);
+    /* Color is set dynamically via inline style based on background */
     z-index: 1;
   }
 

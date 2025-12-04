@@ -64,17 +64,23 @@ export const mainCalendarData = derived(calendars, ($calendars) => {
     return main.data || {};
   }
 
-  // Aggregate sum of all other calendars
+  // Aggregate sum of all other calendars (skip main calendar at index 0)
   const sumData: DayData = {};
   
+  // Iterate through all calendars except the main one
   for (let i = 1; i < $calendars.length; i++) {
     const cal = $calendars[i];
     if (!cal || !cal.data) continue;
     
+    // Sum values for each date across all calendars
     for (const [date, val] of Object.entries(cal.data)) {
       // Ensure value is a valid number
       const numVal = typeof val === 'number' && !isNaN(val) ? val : 0;
-      sumData[date] = (sumData[date] || 0) + numVal;
+      // Sum values for the same date from different calendars
+      if (sumData[date] === undefined) {
+        sumData[date] = 0;
+      }
+      sumData[date] += numVal;
     }
   }
   
