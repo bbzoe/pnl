@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { settings } from '../stores';
   
   export let dateLabel: string;
@@ -18,6 +18,17 @@
   let cellWidth = 0;
   let contentWidth = 0;
   let inputElement: HTMLInputElement | null = null;
+  let isMobile = false;
+
+  // Detect mobile on mount and resize
+  onMount(() => {
+    const checkMobile = () => {
+      isMobile = window.innerWidth <= 768;
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  });
 
   $: {
     if (!isFocused) {
@@ -57,6 +68,11 @@
     // Replace all commas with dots for decimal separator
     // Input type="number" will automatically handle only one decimal point
     inputValue = target.value.replace(/,/g, '.');
+    
+    // Update data in real-time as user types
+    const normalizedValue = inputValue.replace(/,/g, '.');
+    const num = parseFloat(normalizedValue);
+    dispatch('change', { value: normalizedValue.trim() === '' || isNaN(num) ? null : num });
   }
 
   function handleBlur() {
@@ -73,7 +89,16 @@
   }
 
   function handleCellClick(e: MouseEvent) {
-    if (isReadOnly) return;
+    if (isReadOnly) {
+      dispatch('readonly-click');
+      return;
+    }
+    
+    // In mobile, open modal instead of focusing input
+    if (isMobile) {
+      dispatch('mobile-edit');
+      return;
+    }
     
     // Don't focus if clicking directly on input
     const target = e.target as HTMLElement;
@@ -313,22 +338,6 @@
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
   }
   
-  @media (max-width: 768px) {
-    .cell {
-      min-height: 60px;
-      padding: 0.25rem;
-    }
-    .day-number {
-      font-size: 0.75rem;
-    }
-    input {
-      font-size: 0.875rem;
-    }
-    .readonly-text {
-        font-size: 0.875rem;
-    }
-  }
-
   .cell.today {
     border: 3px solid var(--today-border);
   }
@@ -430,13 +439,31 @@
   */
   
   /* Status Colors handled via inline styles for background */
-  .cell.positive, .cell.negative {
-    /* No default bg color, handled by style prop */
-  }
   
   .cell.positive input, .cell.positive .readonly-text, .cell.positive .currency-label,
   .cell.negative input, .cell.negative .readonly-text, .cell.negative .currency-label {
     color: inherit; /* Always inherit text color from theme (black/white) */
+  }
+
+  /* Mobile styles - must be at end to override */
+  @media (max-width: 1024px) {
+    .cell {
+      min-height: 50px;
+      padding: 0.25rem;
+      justify-content: center;
+      align-items: center;
+    }
+    .day-number {
+      position: static !important;
+      font-size: 1rem !important;
+      font-weight: 600;
+      text-align: center;
+      top: auto !important;
+      left: auto !important;
+    }
+    .input-wrapper {
+      display: none !important;
+    }
   }
 </style>
 

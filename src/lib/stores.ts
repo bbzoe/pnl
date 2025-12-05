@@ -11,7 +11,18 @@ const defaultCalendars: Calendar[] = [
 
 const defaultSettings: AppSettings = {
   theme: 'dark', // User prefers dark theme
-  currency: 'USD'
+  currency: 'USD',
+  widgetVisibility: {
+    allTime: true,
+    lastYear: true,
+    thisYear: true,
+    lastMonth: true,
+    thisMonth: true,
+    lastWeek: true,
+    thisWeek: true
+  },
+  passwordEnabled: false,
+  passwordHash: undefined
 };
 
 // Helper to safely access localStorage
@@ -24,6 +35,17 @@ const getStorage = <T>(key: string, defaultVal: T): T => {
     // Extra validation for calendars to ensure at least main exists
     if (key === STORAGE_KEY_CALENDARS && Array.isArray(parsed) && parsed.length === 0) {
         return defaultVal;
+    }
+    // Migrate old settings to new format
+    if (key === STORAGE_KEY_SETTINGS && parsed) {
+      const migrated = {
+        ...defaultVal as AppSettings,
+        ...parsed,
+        widgetVisibility: parsed.widgetVisibility || (defaultVal as AppSettings).widgetVisibility,
+        passwordEnabled: parsed.passwordEnabled !== undefined ? parsed.passwordEnabled : (defaultVal as AppSettings).passwordEnabled,
+        passwordHash: parsed.passwordHash || (defaultVal as AppSettings).passwordHash
+      };
+      return migrated as T;
     }
     return parsed;
   } catch {

@@ -3,6 +3,7 @@
     startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, 
     format, addMonths, subMonths, isToday, isSameMonth, parseISO
   } from 'date-fns';
+  import { createEventDispatcher } from 'svelte';
   import { updateCell } from '../stores';
   import DayCell from './DayCell.svelte';
   import type { DayData } from '../types';
@@ -10,6 +11,8 @@
   export let calendarId: string;
   export let data: DayData;
   export let isReadOnly: boolean = false;
+
+  const dispatch = createEventDispatcher();
   
   let currentDate = new Date();
 
@@ -37,6 +40,14 @@
     if (isReadOnly) return;
     const dateStr = format(date, 'yyyy-MM-dd');
     updateCell(calendarId, dateStr, event.detail.value);
+  }
+
+  function handleReadonlyClick() {
+    dispatch('readonly-click');
+  }
+
+  function handleMobileEdit(day: Date) {
+    dispatch('mobile-edit', { date: day });
   }
 
   // Calculate intensity for color scaling
@@ -81,6 +92,8 @@
         isToday={isToday(day)}
         isOutsideMonth={!isSameMonth(day, currentDate)}
         on:change={(e) => handleCellChange(day, e)}
+        on:readonly-click={handleReadonlyClick}
+        on:mobile-edit={() => handleMobileEdit(day)}
       />
     {/each}
   </div>

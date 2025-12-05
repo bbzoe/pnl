@@ -37,7 +37,9 @@
   let lastWeekPnL = 0;
   let thisWeekPnL = 0;
 
-  $: {
+  // Make calculations reactive to data changes
+  // Use explicit data dependency to ensure reactivity
+  function updateCalculations() {
     const now = new Date();
     const today = startOfDay(now);
     const yesterday = endOfDay(subDays(today, 1));
@@ -70,6 +72,10 @@
     thisWeekPnL = calculatePnL(thisWeekStart, today);
   }
 
+  // Reactive statement: recalculate when data changes
+  // Use JSON.stringify to detect any changes in the data object
+  $: JSON.stringify(data), updateCalculations();
+
   function formatValue(val: number): string {
     if (val === 0) return '0';
     const absVal = Math.abs(val);
@@ -92,57 +98,82 @@
     if (val < 0) return 'negative';
     return 'neutral';
   }
+
+  // Ensure widgetVisibility always exists
+  $: widgetVisibility = $settings.widgetVisibility || {
+    allTime: true,
+    lastYear: true,
+    thisYear: true,
+    lastMonth: true,
+    thisMonth: true,
+    lastWeek: true,
+    thisWeek: true
+  };
 </script>
 
 <div class="stats-widgets">
-  <div class="widget">
-    <div class="widget-label">All time PnL</div>
-    <div class="widget-value {getValueClass(allTimePnL)}">
-      {formatValue(allTimePnL)} <span class="currency">{$settings.currency}</span>
+  {#if widgetVisibility.allTime}
+    <div class="widget">
+      <div class="widget-label">All time PnL</div>
+      <div class="widget-value {getValueClass(allTimePnL)}">
+        {formatValue(allTimePnL)} <span class="currency">{$settings.currency}</span>
+      </div>
     </div>
-  </div>
+  {/if}
 
-  <div class="widget">
-    <div class="widget-label">Last year PnL</div>
-    <div class="widget-value {getValueClass(lastYearPnL)}">
-      {formatValue(lastYearPnL)} <span class="currency">{$settings.currency}</span>
+  {#if widgetVisibility.lastYear}
+    <div class="widget">
+      <div class="widget-label">Last year PnL</div>
+      <div class="widget-value {getValueClass(lastYearPnL)}">
+        {formatValue(lastYearPnL)} <span class="currency">{$settings.currency}</span>
+      </div>
     </div>
-  </div>
+  {/if}
 
-  <div class="widget">
-    <div class="widget-label">Last month PnL</div>
-    <div class="widget-value {getValueClass(lastMonthPnL)}">
-      {formatValue(lastMonthPnL)} <span class="currency">{$settings.currency}</span>
+  {#if widgetVisibility.thisYear}
+    <div class="widget">
+      <div class="widget-label">This year PnL</div>
+      <div class="widget-value {getValueClass(thisYearPnL)}">
+        {formatValue(thisYearPnL)} <span class="currency">{$settings.currency}</span>
+      </div>
     </div>
-  </div>
+  {/if}
 
-  <div class="widget">
-    <div class="widget-label">Last week PnL</div>
-    <div class="widget-value {getValueClass(lastWeekPnL)}">
-      {formatValue(lastWeekPnL)} <span class="currency">{$settings.currency}</span>
+  {#if widgetVisibility.lastMonth}
+    <div class="widget">
+      <div class="widget-label">Last month PnL</div>
+      <div class="widget-value {getValueClass(lastMonthPnL)}">
+        {formatValue(lastMonthPnL)} <span class="currency">{$settings.currency}</span>
+      </div>
     </div>
-  </div>
+  {/if}
 
-  <div class="widget">
-    <div class="widget-label">This year PnL</div>
-    <div class="widget-value {getValueClass(thisYearPnL)}">
-      {formatValue(thisYearPnL)} <span class="currency">{$settings.currency}</span>
+  {#if widgetVisibility.thisMonth}
+    <div class="widget">
+      <div class="widget-label">This month PnL</div>
+      <div class="widget-value {getValueClass(thisMonthPnL)}">
+        {formatValue(thisMonthPnL)} <span class="currency">{$settings.currency}</span>
+      </div>
     </div>
-  </div>
+  {/if}
 
-  <div class="widget">
-    <div class="widget-label">This month PnL</div>
-    <div class="widget-value {getValueClass(thisMonthPnL)}">
-      {formatValue(thisMonthPnL)} <span class="currency">{$settings.currency}</span>
+  {#if widgetVisibility.lastWeek}
+    <div class="widget">
+      <div class="widget-label">Last week PnL</div>
+      <div class="widget-value {getValueClass(lastWeekPnL)}">
+        {formatValue(lastWeekPnL)} <span class="currency">{$settings.currency}</span>
+      </div>
     </div>
-  </div>
+  {/if}
 
-  <div class="widget">
-    <div class="widget-label">This week PnL</div>
-    <div class="widget-value {getValueClass(thisWeekPnL)}">
-      {formatValue(thisWeekPnL)} <span class="currency">{$settings.currency}</span>
+  {#if widgetVisibility.thisWeek}
+    <div class="widget">
+      <div class="widget-label">This week PnL</div>
+      <div class="widget-value {getValueClass(thisWeekPnL)}">
+        {formatValue(thisWeekPnL)} <span class="currency">{$settings.currency}</span>
+      </div>
     </div>
-  </div>
+  {/if}
 </div>
 
 <style>
@@ -162,7 +193,8 @@
   }
 
   :global(.dark) .widget {
-    background: var(--bg-tertiary);
+    background: var(--bg-primary);
+    border-color: #3f3f46; /* Zinc 700 - lighter border in dark mode */
   }
 
   .widget:hover {

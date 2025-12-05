@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import type { Calendar } from '../types';
+  import ConfirmModal from './ConfirmModal.svelte';
 
   export let calendars: Calendar[];
   export let activeId: string;
@@ -9,6 +10,8 @@
 
   let editingId: string | null = null;
   let editName = '';
+  let showConfirmModal = false;
+  let calendarToDelete: string | null = null;
 
   function select(id: string) {
     if (editingId) return;
@@ -21,9 +24,19 @@
 
   function remove(id: string, e: Event) {
     e.stopPropagation();
-    if (confirm('Are you sure you want to delete this calendar?')) {
-        dispatch('remove', id);
+    calendarToDelete = id;
+    showConfirmModal = true;
+  }
+
+  function handleConfirm() {
+    if (calendarToDelete) {
+      dispatch('remove', calendarToDelete);
+      calendarToDelete = null;
     }
+  }
+
+  function handleCancel() {
+    calendarToDelete = null;
   }
 
   function startEdit(c: Calendar) {
@@ -69,8 +82,11 @@
         {:else}
           <span class="tab-name">{c.name}</span>
           {#if c.id !== 'main'}
-            <button class="close-btn" on:click={(e) => remove(c.id, e)} title="Remove">
-              &times;
+            <button class="close-btn" on:click={(e) => remove(c.id, e)} title="Remove" on:mouseenter={(e) => e.stopPropagation()} on:mouseleave={(e) => e.stopPropagation()}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
             </button>
           {/if}
         {/if}
@@ -83,9 +99,22 @@
   </div>
 </div>
 
+<ConfirmModal 
+  bind:isOpen={showConfirmModal}
+  title="Delete Calendar"
+  message="Are you sure you want to delete this calendar? This action cannot be undone."
+  confirmText="Delete"
+  cancelText="Cancel"
+  confirmVariant="danger"
+  on:confirm={handleConfirm}
+  on:close={handleCancel}
+/>
+
 <style>
   .tabs-container {
-    margin-bottom: 1.5rem;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
   }
 
   .tabs-scroll {
@@ -103,7 +132,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.75rem 1.25rem;
+    padding: 0.75rem 0.75rem 0.75rem 1.25rem;
     background: transparent;
     color: var(--text-secondary);
     cursor: pointer;
@@ -129,16 +158,28 @@
   }
 
   .close-btn {
-    opacity: 0;
-    width: 20px;
-    height: 20px;
+    opacity: 0.4;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    min-height: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    font-size: 1.1rem;
+    border-radius: 4px;
     color: var(--text-secondary);
-    transition: all 0.2s;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    transition: opacity 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .close-btn svg {
+    width: 14px;
+    height: 14px;
   }
 
   .tab:hover .close-btn {
@@ -146,8 +187,12 @@
   }
 
   .close-btn:hover {
-    background-color: var(--color-danger-bg);
-    color: var(--color-danger);
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+
+  .close-btn:active {
+    background-color: var(--bg-secondary);
   }
 
   .add-btn {
