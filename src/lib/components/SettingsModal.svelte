@@ -1,12 +1,17 @@
 <script lang="ts">
-  import { settings } from '../stores';
-  import type { WidgetVisibility } from '../types';
+  import { settings, calendars, clearAllData, importCalendars } from '../stores';
+  import type { WidgetVisibility, Calendar } from '../types';
   import { createEventDispatcher } from 'svelte';
 
   export let isOpen = false;
   const dispatch = createEventDispatcher();
 
-  let activeTab: 'widgets' | 'password' = 'widgets';
+  let activeTab: 'widgets' | 'password' | 'data' = 'widgets';
+  let showImportConfirm = false;
+  let showClearConfirm = false;
+  let pendingImportData: Calendar[] | null = null;
+  let importError = '';
+  let fileInput: HTMLInputElement;
 
   // Ensure widgetVisibility always exists
   $: widgetVisibility = $settings.widgetVisibility || {

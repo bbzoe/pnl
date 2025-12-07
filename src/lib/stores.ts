@@ -151,3 +151,15 @@ export const updateCell = (calendarId: string, date: string, value: number | nul
     });
   });
 };
+
+// Helper to clear all data (reset to defaults)
+export const clearAllData = () => {
+  calendars.set([{ id: 'main', name: 'General', data: {} }]);
+};
+
+// Helper to import calendars data
+export const importCalendars = (newCalendars: Calendar[]) => {
+  if (newCalendars && newCalendars.length > 0) {
+    calendars.set(newCalendars);
+  }
+};

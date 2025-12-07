@@ -134,6 +134,22 @@
     updateInputWidth();
   }
 
+  function toggleSign() {
+    if (inputValue === '' || inputValue === '-') {
+      inputValue = '-';
+    } else if (inputValue.startsWith('-')) {
+      inputValue = inputValue.slice(1);
+    } else {
+      inputValue = '-' + inputValue;
+    }
+    updateFontSize();
+    updateInputWidth();
+    // Keep focus on input
+    if (inputElement) {
+      inputElement.focus();
+    }
+  }
+
   function updateInputWidth() {
     if (!inputElement) return;
     const len = inputValue.length || 1;
@@ -178,18 +194,23 @@
     <span class="sizer" bind:this={sizerElement} aria-hidden="true"></span>
     
     <div class="modal-content">
-      <div class="input-wrapper" style="font-size: {fontSize}rem;">
-        <input
-          type="text"
-          inputmode="decimal"
-          bind:this={inputElement}
-          bind:value={inputValue}
-          on:input={handleInput}
-          on:keydown={handleKeydown}
-          placeholder="0"
-          class="value-input"
-        />
-        <span class="currency">{$settings.currency}</span>
+      <div class="input-row">
+        <button class="sign-btn" on:click={toggleSign} aria-label="Toggle sign">
+          +/−
+        </button>
+        <div class="input-wrapper" style="font-size: {fontSize}rem;">
+          <input
+            type="text"
+            inputmode="decimal"
+            bind:this={inputElement}
+            bind:value={inputValue}
+            on:input={handleInput}
+            on:keydown={handleKeydown}
+            placeholder="0"
+            class="value-input"
+          />
+          <span class="currency">{$settings.currency}</span>
+        </div>
       </div>
 
       <button class="change-btn" style="--bg-color: {backgroundColor};" on:click={handleSave}>
@@ -256,6 +277,40 @@
     flex-direction: column;
     align-items: center;
     gap: 3rem;
+  }
+
+  .input-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .sign-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid currentColor;
+    color: inherit;
+    font-size: 1.5rem;
+    font-weight: 600;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    opacity: 0.8;
+    flex-shrink: 0;
+  }
+
+  .sign-btn:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.25);
+  }
+
+  .sign-btn:active {
+    transform: scale(0.95);
   }
 
   .input-wrapper {
