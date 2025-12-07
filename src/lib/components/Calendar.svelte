@@ -15,6 +15,9 @@
   const dispatch = createEventDispatcher();
   
   let currentDate = new Date();
+  
+  // Store references to DayCell components for Tab navigation
+  let cellRefs: (DayCell | null)[] = [];
 
   $: monthStart = startOfMonth(currentDate);
   $: monthEnd = endOfMonth(currentDate);
@@ -50,6 +53,24 @@
     dispatch('mobile-edit', { date: day });
   }
 
+  function handleTabNavigate(dayIndex: number, event: CustomEvent<{ direction: 'next' | 'prev' }>) {
+    const { direction } = event.detail;
+    let nextIndex = direction === 'next' ? dayIndex + 1 : dayIndex - 1;
+    
+    // Find next non-outside-month cell
+    while (nextIndex >= 0 && nextIndex < days.length) {
+      const nextDay = days[nextIndex];
+      if (isSameMonth(nextDay, currentDate)) {
+        // Focus the next cell
+        setTimeout(() => {
+          cellRefs[nextIndex]?.focusInput();
+        }, 0);
+        return;
+      }
+      nextIndex = direction === 'next' ? nextIndex + 1 : nextIndex - 1;
+    }
+  }
+
   // Calculate intensity for color scaling
   $: visibleValues = days.map(day => {
       const d = format(day, 'yyyy-MM-dd');
@@ -80,10 +101,11 @@
   </div>
 
   <div class="days-grid">
-    {#each days as day}
+    {#each days as day, index}
       {@const dateStr = format(day, 'yyyy-MM-dd')}
       {@const val = data[dateStr]}
       <DayCell 
+        bind:this={cellRefs[index]}
         dateLabel={format(day, 'd')}
         value={val}
         maxPositive={maxPositive}
@@ -94,6 +116,7 @@
         on:change={(e) => handleCellChange(day, e)}
         on:readonly-click={handleReadonlyClick}
         on:mobile-edit={() => handleMobileEdit(day)}
+        on:tab-navigate={(e) => handleTabNavigate(index, e)}
       />
     {/each}
   </div>

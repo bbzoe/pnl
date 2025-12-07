@@ -88,6 +88,28 @@
     isFocused = true;
   }
 
+  function handleInputKeydown(e: KeyboardEvent) {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      // Save current value
+      const normalizedValue = inputValue.replace(/,/g, '.');
+      const num = parseFloat(normalizedValue);
+      dispatch('change', { value: normalizedValue.trim() === '' || isNaN(num) ? null : num });
+      // Tell parent to focus next/previous cell
+      dispatch('tab-navigate', { direction: e.shiftKey ? 'prev' : 'next' });
+    }
+  }
+  
+  // Public method to focus this cell's input
+  export function focusInput() {
+    if (inputElement) {
+      inputElement.focus();
+      if (inputValue) {
+        inputElement.select();
+      }
+    }
+  }
+
   function handleCellClick(e: MouseEvent) {
     if (isReadOnly) {
       dispatch('readonly-click');
@@ -298,6 +320,7 @@
                     on:input={handleInput}
                     on:blur={handleBlur}
                     on:focus={handleFocus}
+                    on:keydown={handleInputKeydown}
                     placeholder=""
                 />
             </div>
