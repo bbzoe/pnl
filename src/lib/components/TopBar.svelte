@@ -22,7 +22,7 @@
 </script>
 
 <div class="top-bar">
-  <div class="logo">PNL tracker</div>
+  <div class="logo">PnL watch</div>
   
   <div class="controls">
     <div class="currency-selector-wrapper">

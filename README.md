@@ -1,47 +1,118 @@
-# Svelte + TS + Vite
+# 📊 PnL watch
 
-This template should help get you started developing with Svelte and TypeScript in Vite.
+A beautiful, privacy-first Profit & Loss tracker for traders. Track your daily trading performance with an intuitive calendar heatmap interface.
 
-## Recommended IDE Setup
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Svelte](https://img.shields.io/badge/Svelte-5-FF3E00.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6.svg)
+![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8.svg)
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+## ✨ Features
 
-## Need an official Svelte framework?
+- **🔒 100% Private** - All data stays in your browser's localStorage. No servers, no tracking, no data collection.
+- **📅 Calendar Heatmap** - Visual representation of your daily P&L with intuitive color coding (green for profits, red for losses).
+- **📈 Line Chart View** - Track your cumulative performance over time with beautiful charts.
+- **💰 Multiple Currencies** - Support for USD, BTC, and ETH.
+- **📊 Smart Statistics** - View your performance across different time periods (all time, year, month, week).
+- **🗂️ Multiple Calendars** - Create separate calendars for different trading strategies or accounts.
+- **🌓 Dark/Light Mode** - Easy on the eyes, day or night.
+- **🔐 Password Protection** - Optional password lock to keep your data private.
+- **📱 PWA Support** - Install as a standalone app on any device.
+- **📱 Mobile Friendly** - Fully responsive design that works great on all screen sizes.
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+## 🚀 Getting Started
 
-## Technical considerations
+### Prerequisites
 
-**Why use this over SvelteKit?**
+- Node.js 18+ 
+- npm or pnpm
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+### Installation
 
-This template contains as little as possible to get started with Vite + TypeScript + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+```bash
+# Clone the repository
+git clone https://github.com/bbzoe/pnl.git
 
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
+# Navigate to the project directory
+cd pnl
 
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
+# Install dependencies
+npm install
 
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
-
-**Why include `.vscode/extensions.json`?**
-
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
-
-**Why enable `allowJs` in the TS template?**
-
-While `allowJs: false` would indeed prevent the use of `.js` files in the project, it does not prevent the use of JavaScript syntax in `.svelte` files. In addition, it would force `checkJs: false`, bringing the worst of both worlds: not being able to guarantee the entire codebase is TypeScript, and also having worse typechecking for the existing JavaScript. In addition, there are valid use cases in which a mixed codebase may be relevant.
-
-**Why is HMR not preserving my local component state?**
-
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/rixo/svelte-hmr#svelte-hmr).
-
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
-
-```ts
-// store.ts
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
+# Start the development server
+npm run dev
 ```
+
+The app will be available at `http://localhost:5173`
+
+### Building for Production
+
+```bash
+npm run build
+```
+
+The built files will be in the `dist` directory, ready to be deployed to any static hosting service.
+
+## 🎯 How to Use
+
+1. **Enter Daily P&L** - Click on any calendar cell and enter your profit or loss for that day.
+2. **View Statistics** - Check the widgets at the top to see your performance summary.
+3. **Switch Views** - Toggle between Calendar and Chart view using the buttons.
+4. **Create Calendars** - Add multiple calendars to track different strategies.
+5. **Customize** - Use Settings to toggle widgets and set up password protection.
+
+## 🛠️ Tech Stack
+
+- **[Svelte 5](https://svelte.dev/)** - Modern, reactive UI framework
+- **[TypeScript](https://www.typescriptlang.org/)** - Type-safe JavaScript
+- **[Vite](https://vitejs.dev/)** - Next generation frontend tooling
+- **[date-fns](https://date-fns.org/)** - Modern JavaScript date utility library
+- **[Vite PWA Plugin](https://vite-pwa-org.netlify.app/)** - PWA support
+
+## 📁 Project Structure
+
+```
+src/
+├── lib/
+│   ├── components/     # Svelte components
+│   │   ├── Calendar.svelte
+│   │   ├── DayCell.svelte
+│   │   ├── LineChart.svelte
+│   │   ├── StatsWidgets.svelte
+│   │   ├── TopBar.svelte
+│   │   └── ...
+│   ├── stores.ts       # Svelte stores for state management
+│   └── types.ts        # TypeScript type definitions
+├── App.svelte          # Main application component
+├── app.css             # Global styles
+└── main.ts             # Application entry point
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to:
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Inspired by the need for a simple, private way to track trading performance
+- Built with love for the trading community
+
+---
+
+<p align="center">
+  Made with ❤️ by <a href="https://github.com/bbzoe">@bbzoe</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/bbzoe/pnl">⭐ Star this repo if you find it useful!</a>
+</p>

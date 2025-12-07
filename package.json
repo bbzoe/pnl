@@ -1,7 +1,22 @@
 {
-  "name": "pnl",
-  "private": true,
-  "version": "0.0.0",
+  "name": "pnl-watch",
+  "version": "1.0.0",
+  "description": "A beautiful, privacy-first Profit & Loss tracker for traders",
+  "author": "Bartosz Bilicki",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bbzoe/pnl.git"
+  },
+  "keywords": [
+    "pnl",
+    "trading",
+    "tracker",
+    "profit-loss",
+    "svelte",
+    "calendar",
+    "heatmap"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",
