@@ -2,6 +2,7 @@
   import { settings, calendars, clearAllData, importCalendars } from '../stores';
   import type { WidgetVisibility, Calendar } from '../types';
   import { createEventDispatcher } from 'svelte';
+  import ConfirmModal from './ConfirmModal.svelte';
 
   export let isOpen = false;
   const dispatch = createEventDispatcher();
@@ -11,7 +12,94 @@
   let showClearConfirm = false;
   let pendingImportData: Calendar[] | null = null;
   let importError = '';
+  let importSuccess = false;
+  let exportSuccess = false;
   let fileInput: HTMLInputElement;
+
+  // Export data as JSON file
+  function handleExport() {
+    const data = {
+      calendars: $calendars,
+      exportedAt: new Date().toISOString(),
+      version: '1.0'
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pnl-watch-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    exportSuccess = true;
+    setTimeout(() => exportSuccess = false, 2000);
+  }
+
+  // Trigger file input
+  function handleImportClick() {
+    fileInput?.click();
+  }
+
+  // Handle file selection
+  function handleFileSelect(e: Event) {
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target?.result as string);
+        if (data.calendars && Array.isArray(data.calendars)) {
+          pendingImportData = data.calendars;
+          showImportConfirm = true;
+          importError = '';
+        } else {
+          importError = 'Invalid file format. Expected PnL watch backup file.';
+        }
+      } catch {
+        importError = 'Could not parse file. Make sure it is a valid JSON file.';
+      }
+    };
+    reader.readAsText(file);
+    // Reset input so same file can be selected again
+    target.value = '';
+  }
+
+  // Confirm import
+  function confirmImport() {
+    if (pendingImportData) {
+      importCalendars(pendingImportData);
+      pendingImportData = null;
+      showImportConfirm = false;
+      importSuccess = true;
+      setTimeout(() => importSuccess = false, 2000);
+    }
+  }
+
+  // Cancel import
+  function cancelImport() {
+    pendingImportData = null;
+    showImportConfirm = false;
+  }
+
+  // Show clear data confirmation
+  function handleClearClick() {
+    showClearConfirm = true;
+  }
+
+  // Confirm clear all data
+  function confirmClear() {
+    clearAllData();
+    showClearConfirm = false;
+  }
+
+  // Cancel clear
+  function cancelClear() {
+    showClearConfirm = false;
+  }
 
   // Ensure widgetVisibility always exists
   $: widgetVisibility = $settings.widgetVisibility || {
@@ -149,6 +237,12 @@
         >
           Password
         </button>
+        <button 
+          class="tab {activeTab === 'data' ? 'active' : ''}"
+          on:click={() => activeTab = 'data'}
+        >
+          Data
+        </button>
       </div>
 
       <div class="tab-content">
@@ -284,11 +378,93 @@
               </div>
             {/if}
           </div>
+        {:else if activeTab === 'data'}
+          <div class="data-settings">
+            <h3>Data Management</h3>
+            <p class="settings-description">Export, import, or clear your PnL data</p>
+            
+            <div class="data-section">
+              <h4>Export Data</h4>
+              <p class="section-description">Download all your calendars and data as a JSON file</p>
+              <button class="btn-primary" on:click={handleExport}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Export Data
+              </button>
+              {#if exportSuccess}
+                <div class="message success">Data exported successfully!</div>
+              {/if}
+            </div>
+
+            <div class="data-section">
+              <h4>Import Data</h4>
+              <p class="section-description">Restore data from a previously exported backup file</p>
+              <input 
+                type="file" 
+                accept=".json"
+                bind:this={fileInput}
+                on:change={handleFileSelect}
+                style="display: none;"
+              />
+              <button class="btn-secondary" on:click={handleImportClick}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                Import Data
+              </button>
+              {#if importError}
+                <div class="message error">{importError}</div>
+              {/if}
+              {#if importSuccess}
+                <div class="message success">Data imported successfully!</div>
+              {/if}
+            </div>
+
+            <div class="data-section danger-zone">
+              <h4>Danger Zone</h4>
+              <p class="section-description">Permanently delete all your data. This cannot be undone.</p>
+              <button class="btn-danger-full" on:click={handleClearClick}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  <line x1="10" y1="11" x2="10" y2="17"/>
+                  <line x1="14" y1="11" x2="14" y2="17"/>
+                </svg>
+                Remove All Data
+              </button>
+            </div>
+          </div>
         {/if}
       </div>
     </div>
   </div>
 {/if}
+
+<ConfirmModal 
+  bind:isOpen={showImportConfirm}
+  title="Import Data"
+  message="This will replace all your current data with the imported data. Are you sure you want to continue?"
+  confirmText="Import"
+  cancelText="Cancel"
+  on:confirm={confirmImport}
+  on:close={cancelImport}
+/>
+
+<ConfirmModal 
+  bind:isOpen={showClearConfirm}
+  title="Remove All Data"
+  message="This will permanently delete all your calendars and PnL data. This action cannot be undone."
+  confirmText="Delete Everything"
+  cancelText="Cancel"
+  confirmVariant="danger"
+  on:confirm={confirmClear}
+  on:close={cancelClear}
+/>
 
 <style>
   .modal-backdrop {
@@ -382,7 +558,8 @@
   }
 
   .widgets-settings h3,
-  .password-settings h3 {
+  .password-settings h3,
+  .data-settings h3 {
     font-size: 1.125rem;
     font-weight: 700;
     margin: 0 0 0.5rem 0;
@@ -499,6 +676,86 @@
   .message.success {
     background: rgba(16, 185, 129, 0.1);
     color: var(--color-success);
+  }
+
+  /* Data settings styles */
+  .data-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .data-section {
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+  }
+
+  .data-section h4 {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    margin: 0 0 0.25rem 0;
+    color: var(--text-primary);
+  }
+
+  .section-description {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    margin: 0 0 1rem 0;
+    line-height: 1.4;
+  }
+
+  .data-section.danger-zone {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+
+  .data-section.danger-zone h4 {
+    color: var(--color-danger);
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger,
+  .btn-danger-full {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary svg,
+  .btn-secondary svg,
+  .btn-danger-full svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+  }
+
+  .btn-secondary:hover {
+    background: var(--border-color);
+  }
+
+  .btn-danger-full {
+    background: var(--color-danger);
+    color: white;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .btn-danger-full:hover {
+    background: var(--color-danger-dark);
   }
 </style>
 
