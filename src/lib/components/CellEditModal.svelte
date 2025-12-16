@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, tick } from 'svelte';
   import { settings } from '../stores';
+  import { haptic } from '../telegram';
 
   export let isOpen = false;
   export let date: Date | null = null;
@@ -135,6 +136,7 @@
   }
 
   function toggleSign() {
+    haptic.impact('light');
     if (inputValue === '' || inputValue === '-') {
       inputValue = '-';
     } else if (inputValue.startsWith('-')) {
@@ -160,6 +162,7 @@
     const normalizedValue = inputValue.replace(/,/g, '.');
     const num = parseFloat(normalizedValue);
     const finalValue = normalizedValue.trim() === '' || isNaN(num) ? null : num;
+    haptic.notification('success');
     dispatch('save', { value: finalValue });
     closeModal();
   }

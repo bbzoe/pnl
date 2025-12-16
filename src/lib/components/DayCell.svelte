@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
   import { settings } from '../stores';
+  import { haptic } from '../telegram';
   
   export let dateLabel: string;
   export let value: number | undefined = undefined;
@@ -80,8 +81,13 @@
     // Ensure all commas are replaced with dots before parsing
     const normalizedValue = inputValue.replace(/,/g, '.');
     const num = parseFloat(normalizedValue);
+    const newValue = normalizedValue.trim() === '' || isNaN(num) ? null : num;
     // If empty string, send null
-    dispatch('change', { value: normalizedValue.trim() === '' || isNaN(num) ? null : num });
+    dispatch('change', { value: newValue });
+    // Haptic feedback when value is saved
+    if (newValue !== null) {
+      haptic.notification('success');
+    }
   }
 
   function handleFocus() {
@@ -112,12 +118,14 @@
 
   function handleCellClick(e: MouseEvent) {
     if (isReadOnly) {
+      haptic.notification('warning');
       dispatch('readonly-click');
       return;
     }
     
     // In mobile, open modal instead of focusing input
     if (isMobile) {
+      haptic.impact('light');
       dispatch('mobile-edit');
       return;
     }

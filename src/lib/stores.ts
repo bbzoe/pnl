@@ -1,5 +1,6 @@
-import { writable, derived } from 'svelte/store';
+import { writable, derived, get } from 'svelte/store';
 import type { Calendar, AppSettings, DayData } from './types';
+import { isTMA, telegramTheme } from './telegram';
 
 // New key to start fresh without demo data
 const STORAGE_KEY_CALENDARS = 'pnl_calendars_v4';
@@ -63,17 +64,32 @@ calendars.subscribe(val => {
   }
 });
 
+// Apply theme to document
+const applyTheme = (theme: 'dark' | 'light') => {
+  if (typeof document === 'undefined') return;
+  if (theme === 'dark') {
+    document.documentElement.classList.add('dark');
+    document.documentElement.classList.remove('light');
+  } else {
+    document.documentElement.classList.add('light');
+    document.documentElement.classList.remove('dark');
+  }
+};
+
 settings.subscribe(val => {
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(val));
-    // Apply theme to document
-    if (val.theme === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
-    } else {
-      document.documentElement.classList.add('light');
-      document.documentElement.classList.remove('dark');
+    // Apply theme to document (only in web mode, TMA uses Telegram theme)
+    if (!get(isTMA)) {
+      applyTheme(val.theme);
     }
+  }
+});
+
+// In TMA mode, sync theme with Telegram
+telegramTheme.subscribe(tgTheme => {
+  if (tgTheme) {
+    applyTheme(tgTheme);
   }
 });
 

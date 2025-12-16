@@ -152,6 +152,19 @@ input {
   max-width: 1400px;
   margin: 0 auto;
   padding: 1rem;
+  padding-left: max(1rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1rem, env(safe-area-inset-right, 0px));
   position: relative;
   z-index: 1;
+}
+
+/* Telegram Mini-App CSS variables (applied when in TMA) */
+:root {
+  --tg-theme-bg-color: var(--bg-primary);
+  --tg-theme-text-color: var(--text-primary);
+  --tg-theme-hint-color: var(--text-secondary);
+  --tg-theme-link-color: var(--accent);
+  --tg-theme-button-color: var(--text-primary);
+  --tg-theme-button-text-color: var(--bg-primary);
+  --tg-theme-secondary-bg-color: var(--bg-secondary);
 }

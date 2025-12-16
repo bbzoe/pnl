@@ -17,6 +17,7 @@
   import CellEditModal from './lib/components/CellEditModal.svelte';
   import { settings, updateCell } from './lib/stores';
   import { format } from 'date-fns';
+  import { isTMA, haptic, backButton } from './lib/telegram';
 
   let activeTab = 'main';
   let settingsOpen = false;
@@ -53,6 +54,7 @@
 
   // Handle Add
   function handleAdd() {
+    haptic.notification('success');
     addCalendar();
     // Optional: Switch to new calendar?
     // We need the ID of the new calendar. 
@@ -68,6 +70,7 @@
 
   // Handle Remove
   function handleRemove(e: CustomEvent<string>) {
+    haptic.notification('warning');
     const idToRemove = e.detail;
     removeCalendar(idToRemove);
     if (activeTab === idToRemove) {
@@ -167,8 +170,20 @@
   } 
 </script>
 
-<div class="container" class:blurred={isLocked}>
-  <TopBar on:openSettings={handleOpenSettings} />
+<div class="container" class:blurred={isLocked} class:tma-mode={$isTMA}>
+  {#if !$isTMA}
+    <TopBar on:openSettings={handleOpenSettings} />
+  {:else}
+    <!-- Minimal TMA header with settings access -->
+    <div class="tma-header">
+      <span class="tma-title">PnL watch</span>
+      <button class="tma-settings-btn" on:click={handleOpenSettings} title="Settings">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41l-0.36,2.54c-0.59,0.24-1.13,0.56-1.62,0.94l-2.39-0.96c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+        </svg>
+      </button>
+    </div>
+  {/if}
   
   <p class="app-description">
     Free, private PnL tracker. All data stays local, no servers, just your trades.
@@ -334,6 +349,49 @@
 {/if}
 
 <style>
+  /* TMA mode adjustments */
+  .container.tma-mode {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 0.5rem);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+  }
+
+  /* TMA minimal header */
+  .tma-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    margin-bottom: 0.25rem;
+  }
+
+  .tma-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .tma-settings-btn {
+    padding: 0.5rem;
+    border-radius: 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+  }
+
+  .tma-settings-btn:hover {
+    background-color: var(--bg-secondary);
+  }
+
+  .tma-settings-btn svg {
+    width: 1.125rem;
+    height: 1.125rem;
+    color: var(--text-primary);
+  }
+
   .app-description {
     font-size: 0.75rem;
     font-weight: 400;
