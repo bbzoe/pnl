@@ -15,11 +15,11 @@ const defaultSettings: AppSettings = {
   currency: 'USD',
   widgetVisibility: {
     allTime: true,
-    lastYear: true,
-    thisYear: true,
-    lastMonth: true,
+    lastYear: false,
+    thisYear: false,
+    lastMonth: false,
     thisMonth: true,
-    lastWeek: true,
+    lastWeek: false,
     thisWeek: true
   },
   passwordEnabled: false,
